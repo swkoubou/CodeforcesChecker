@@ -1,6 +1,5 @@
 <?php
-
-$config = json_decode(file_get_contents(__DIR__ . '../../../config.json'), true);
+require_once __DIR__ . 'config.php';
 
 // 特定のユーザ名 $user_name について、データを更新する
 function update_user( $db_connecton, $user_name )
