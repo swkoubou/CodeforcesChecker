@@ -4,5 +4,6 @@
         "user": "root",
         "pass": "",
         "dbname": "cfchecker_db"
-    }
+    },
+    "proxy": null
 }

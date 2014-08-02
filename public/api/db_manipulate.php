@@ -9,7 +9,7 @@ function update_user( $db_connecton, $user_name )
 
 	// Codeforces の API を叩いてデータを取得
 	// ユーザが存在しないとき、ステータスコード 400 ( bad request ) がきて file_get_contents が false を返す
-	if ( !( $api_result = file_get_contents( 'http://codeforces.com/api/user.rating?handle=' . $user_name ) ) )
+    if ( !( $api_result = file_get_contents( 'http://codeforces.com/api/user.rating?handle=' . $user_name, false, Config::$proxyContent) ) )
 	{
 		return 1;
 	}
@@ -37,7 +37,8 @@ $user_name = array_key_exists( 'user_name', $_GET ) ? $_GET{ 'user_name' } : "";
 $mode = $_GET{ 'mode' };
 
 // データベースに接続
-$db_connecton = new PDO( 'mysql:host='.$config['mysql']['host'].';dbname='.$config['mysql']['dbname'].';', $config['mysql']['user'], $config['mysql']['pass'] );
+$db_connecton = new PDO( 'mysql:host='.Config::$config['mysql']['host'].';dbname='.Config::$config['mysql']['dbname'].';',
+    Config::$config['mysql']['user'], Config::$config['mysql']['pass'] );
 
 // mode パラメータにより処理を振り分け
 switch ( $mode )
