@@ -1,59 +1,61 @@
 <?php
 
-// “Á’è‚Ìƒ†[ƒU–¼ $user_name ‚É‚Â‚¢‚ÄAƒf[ƒ^‚ðXV‚·‚é
+$config = json_decode(file_get_contents(__DIR__ . '../../../config.json'), true);
+
+// ç‰¹å®šã®ãƒ¦ãƒ¼ã‚¶å $user_name ã«ã¤ã„ã¦ã€ãƒ‡ãƒ¼ã‚¿ã‚’æ›´æ–°ã™ã‚‹
 function update_user( $db_connecton, $user_name )
 {
-	// ƒ†[ƒU‚Ì ID iƒf[ƒ^ƒx[ƒX“I‚ÈˆÓ–¡‚Åj‚ðŽæ“¾
+	// ãƒ¦ãƒ¼ã‚¶ã® ID ï¼ˆãƒ‡ãƒ¼ã‚¿ãƒ™ãƒ¼ã‚¹çš„ãªæ„å‘³ã§ï¼‰ã‚’å–å¾—
 	$user_id = $db_connecton->query( 'select id from users where name = "' . $user_name . '"' )->fetch()[0];
 
-	// Codeforces ‚Ì API ‚ð’@‚¢‚Äƒf[ƒ^‚ðŽæ“¾
-	// ƒ†[ƒU‚ª‘¶Ý‚µ‚È‚¢‚Æ‚«AƒXƒe[ƒ^ƒXƒR[ƒh 400 ( bad request ) ‚ª‚«‚Ä file_get_contents ‚ª false ‚ð•Ô‚·
+	// Codeforces ã® API ã‚’å©ã„ã¦ãƒ‡ãƒ¼ã‚¿ã‚’å–å¾—
+	// ãƒ¦ãƒ¼ã‚¶ãŒå­˜åœ¨ã—ãªã„ã¨ãã€ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ã‚³ãƒ¼ãƒ‰ 400 ( bad request ) ãŒãã¦ file_get_contents ãŒ false ã‚’è¿”ã™
 	if ( !( $api_result = file_get_contents( 'http://codeforces.com/api/user.rating?handle=' . $user_name ) ) )
 	{
 		return 1;
 	}
 
-	// Žæ“¾‚µ‚½ JSON ‚ð PHP ‚Åˆµ‚¦‚éŒ`‚ÉƒfƒR[ƒh
+	// å–å¾—ã—ãŸ JSON ã‚’ PHP ã§æ‰±ãˆã‚‹å½¢ã«ãƒ‡ã‚³ãƒ¼ãƒ‰
 	$json = json_decode( $api_result, true );
 
-	// ƒŒ[ƒeƒBƒ“ƒO„ˆÚ‚ÉŠÖ‚·‚é•”•ª‚ðƒ‹[ƒv
+	// ãƒ¬ãƒ¼ãƒ†ã‚£ãƒ³ã‚°æŽ¨ç§»ã«é–¢ã™ã‚‹éƒ¨åˆ†ã‚’ãƒ«ãƒ¼ãƒ—
 	foreach ( $json{ 'result' } as $row )
 	{
-		// ƒAƒbƒvƒf[ƒg•b‚ÆXVŒãƒŒ[ƒg
+		// ã‚¢ãƒƒãƒ—ãƒ‡ãƒ¼ãƒˆç§’ã¨æ›´æ–°å¾Œãƒ¬ãƒ¼ãƒˆ
 		$sec = $row{ 'ratingUpdateTimeSeconds' };
 		$rating = $row{ 'newRating' };
 
-		// ƒf[ƒ^ƒx[ƒX‚É•Û‘¶
+		// ãƒ‡ãƒ¼ã‚¿ãƒ™ãƒ¼ã‚¹ã«ä¿å­˜
 		$db_connecton->query( 'insert into ratings ( user_id, updated_sec, rating ) values ( ' . $user_id . ', ' . $sec . ', ' . $rating . ' )' );
 	}
 
 	return 0;
 }
 
-// GET ƒpƒ‰ƒ[ƒ^‚Ìˆ—
-// JavaScript ‘¤‚ÌŠÈ—ª‚Ì‚½‚ß‚É user_name ‚Í‹]µ‚É‚È‚Á‚½
+// GET ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã®å‡¦ç†
+// JavaScript å´ã®ç°¡ç•¥ã®ãŸã‚ã« user_name ã¯çŠ ç‰²ã«ãªã£ãŸ
 $user_name = array_key_exists( 'user_name', $_GET ) ? $_GET{ 'user_name' } : "";
 $mode = $_GET{ 'mode' };
 
-// ƒf[ƒ^ƒx[ƒX‚ÉÚ‘±
-$db_connecton = new PDO( 'mysql:host=localhost;dbname=cfchecker_db;', 'root', '' );
+// ãƒ‡ãƒ¼ã‚¿ãƒ™ãƒ¼ã‚¹ã«æŽ¥ç¶š
+$db_connecton = new PDO( 'mysql:host='.$config['mysql']['host'].';dbname='.$config['mysql']['dbname'].';', $config['mysql']['user'], $config['mysql']['pass'] );
 
-// mode ƒpƒ‰ƒ[ƒ^‚É‚æ‚èˆ—‚ðU‚è•ª‚¯
+// mode ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã«ã‚ˆã‚Šå‡¦ç†ã‚’æŒ¯ã‚Šåˆ†ã‘
 switch ( $mode )
 {
-case 'json': // ƒOƒ‰ƒt•`‰æ—p JSON ƒf[ƒ^‚ÌƒŠƒNƒGƒXƒg
-	// JSON ƒf[ƒ^‚ÌŠOŠs‚Í”z—ñ
+case 'json': // ã‚°ãƒ©ãƒ•æç”»ç”¨ JSON ãƒ‡ãƒ¼ã‚¿ã®ãƒªã‚¯ã‚¨ã‚¹ãƒˆ
+	// JSON ãƒ‡ãƒ¼ã‚¿ã®å¤–éƒ­ã¯é…åˆ—
 	echo '[';
 
-	// ƒJƒ“ƒ}‘}“ü—pƒtƒ‰ƒO
-	//ƒ_ƒT‚¢cc
+	// ã‚«ãƒ³ãƒžæŒ¿å…¥ç”¨ãƒ•ãƒ©ã‚°
+	//ãƒ€ã‚µã„â€¦â€¦
 	$first_user = true;
 
-	// ƒf[ƒ^ƒx[ƒX‚©‚çƒ†[ƒU–¼‚ðÅVƒŒ[ƒgiŒ»ÝƒŒ[ƒgj‚ª‚‚¢‡‚ÉŽæ“¾‚µ‚Äƒ‹[ƒv
+	// ãƒ‡ãƒ¼ã‚¿ãƒ™ãƒ¼ã‚¹ã‹ã‚‰ãƒ¦ãƒ¼ã‚¶åã‚’æœ€æ–°ãƒ¬ãƒ¼ãƒˆï¼ˆï¼ç¾åœ¨ãƒ¬ãƒ¼ãƒˆï¼‰ãŒé«˜ã„é †ã«å–å¾—ã—ã¦ãƒ«ãƒ¼ãƒ—
 	for ( $users = $db_connecton->query( 'select * from users u order by ( select rating from ratings where user_id = u.id and updated_sec = ( select max( updated_sec ) from ratings where user_id = u.id ) ) desc;' ); $user = $users->fetch(); )
 	{
-		// ƒJƒ“ƒ}‚Ì‘}“ü
-		// ƒ_ƒT‚¢cc
+		// ã‚«ãƒ³ãƒžã®æŒ¿å…¥
+		// ãƒ€ã‚µã„â€¦â€¦
 		if ( $first_user )
 		{
 			$first_user = false;
@@ -63,16 +65,16 @@ case 'json': // ƒOƒ‰ƒt•`‰æ—p JSON ƒf[ƒ^‚ÌƒŠƒNƒGƒXƒg
 			echo ',';
 		}
 
-		// ˆêŒ‚Ìƒf[ƒ^‚É‚Â‚¢‚Äˆ—
+		// ä¸€ä»¶ã®ãƒ‡ãƒ¼ã‚¿ã«ã¤ã„ã¦å‡¦ç†
 		echo '{ ';
 		echo '"label": "' . $user[ 'name' ] . '", ';
 		echo '"data": [';
 		$first_data = true;
 
-		// ’…–Ú‚µ‚Ä‚¢‚éƒ†[ƒU‚É‚Â‚¢‚ÄAƒŒ[ƒgXVî•ñ‚ðŽæ“¾
+		// ç€ç›®ã—ã¦ã„ã‚‹ãƒ¦ãƒ¼ã‚¶ã«ã¤ã„ã¦ã€ãƒ¬ãƒ¼ãƒˆæ›´æ–°æƒ…å ±ã‚’å–å¾—
 		for ( $ratings = $db_connecton->query( 'select updated_sec as sec, rating from ratings where user_id = ' . $user{ 'id' } ); $data = $ratings->fetch(); )
 		{
-			// ƒJƒ“ƒ}‚Ì‘}“üiƒ_ƒT‚¢j
+			// ã‚«ãƒ³ãƒžã®æŒ¿å…¥ï¼ˆãƒ€ã‚µã„ï¼‰
 			if ( $first_data )
 			{
 				$first_data = false;
@@ -82,42 +84,42 @@ case 'json': // ƒOƒ‰ƒt•`‰æ—p JSON ƒf[ƒ^‚ÌƒŠƒNƒGƒXƒg
 				echo ',';
 			}
 
-			// ƒf[ƒ^‚ð•\‚·ƒ^ƒvƒ‹
-			// Flot ‚Ì“s‡‚Å•b‚Í 1000 ”{
+			// ãƒ‡ãƒ¼ã‚¿ã‚’è¡¨ã™ã‚¿ãƒ—ãƒ«
+			// Flot ã®éƒ½åˆã§ç§’ã¯ 1000 å€
 			echo '[ ' . $data{ 'sec' } * 1000 . ', ' . $data{ 'rating' } . ' ]';
 		}
 		echo '] }';
 	}
 	echo ']';
 	break;
-case 'add': // ƒ†[ƒU’Ç‰ÁƒŠƒNƒGƒXƒg
-	// $user_name ‚ð’Ç‰Á‚µ‚Ä update_user ‚ðŒÄ‚Ño‚µ
+case 'add': // ãƒ¦ãƒ¼ã‚¶è¿½åŠ ãƒªã‚¯ã‚¨ã‚¹ãƒˆ
+	// $user_name ã‚’è¿½åŠ ã—ã¦ update_user ã‚’å‘¼ã³å‡ºã—
 	if ( !$db_connecton->query( 'insert into users ( name ) values ( "' . $user_name . '" )' ) || update_user( $db_connecton, $user_name ) )
 	{
-		// Ž¸”s‚µ‚½‚çƒf[ƒ^ƒx[ƒX‚©‚çÁ‚·
+		// å¤±æ•—ã—ãŸã‚‰ãƒ‡ãƒ¼ã‚¿ãƒ™ãƒ¼ã‚¹ã‹ã‚‰æ¶ˆã™
 		$db_connecton->query( 'delete from users where name = "' . $user_name . '"' );
-		// ˆÈãI—¹‚ÌƒXƒe[ƒ^ƒXƒR[ƒh‚ð•\Ž¦
+		// ä»¥ä¸Šçµ‚äº†ã®ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ã‚³ãƒ¼ãƒ‰ã‚’è¡¨ç¤º
 		echo 1;
 	}
 	else
 	{
-		// ³íI—¹‚ÌƒXƒe[ƒ^ƒXƒR[ƒh‚ð•\Ž¦
+		// æ­£å¸¸çµ‚äº†ã®ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹ã‚³ãƒ¼ãƒ‰ã‚’è¡¨ç¤º
 		echo 0;
 	}
 	break;
-case 'update': // ƒf[ƒ^XVƒŠƒNƒGƒXƒg
-	// ƒf[ƒ^ƒx[ƒX‚É‚ ‚é‘Sƒ†[ƒU‚ðŽæ‚èo‚µ‚Äƒ‹[ƒv
+case 'update': // ãƒ‡ãƒ¼ã‚¿æ›´æ–°ãƒªã‚¯ã‚¨ã‚¹ãƒˆ
+	// ãƒ‡ãƒ¼ã‚¿ãƒ™ãƒ¼ã‚¹ã«ã‚ã‚‹å…¨ãƒ¦ãƒ¼ã‚¶ã‚’å–ã‚Šå‡ºã—ã¦ãƒ«ãƒ¼ãƒ—
 	for ( $users = $db_connecton->query( 'select name from users' ); $user = $users->fetch(); )
 	{
-		// ƒf[ƒ^XV
+		// ãƒ‡ãƒ¼ã‚¿æ›´æ–°
 		update_user( $db_connecton, $user{ 'name' } );
-		// 5 [times/sec] ‚ÌƒAƒNƒZƒX§ŒÀ‚ª‚ ‚é‚Ì‚Å 200 [ms] ƒEƒFƒCƒg
+		// 5 [times/sec] ã®ã‚¢ã‚¯ã‚»ã‚¹åˆ¶é™ãŒã‚ã‚‹ã®ã§ 200 [ms] ã‚¦ã‚§ã‚¤ãƒˆ
 		usleep( 200 * 1000 );
 	}
 	echo 0;
 	break;
-case 'reset': // ƒf[ƒ^Á‹ŽƒŠƒNƒGƒXƒg
-	// ƒŒ[ƒeƒBƒ“ƒO‚ðÁ‹Ž‚µ‚Ä‚©‚çƒ†[ƒU‚ðÁ‹Ž
+case 'reset': // ãƒ‡ãƒ¼ã‚¿æ¶ˆåŽ»ãƒªã‚¯ã‚¨ã‚¹ãƒˆ
+	// ãƒ¬ãƒ¼ãƒ†ã‚£ãƒ³ã‚°ã‚’æ¶ˆåŽ»ã—ã¦ã‹ã‚‰ãƒ¦ãƒ¼ã‚¶ã‚’æ¶ˆåŽ»
 	$db_connecton->query( 'delete from ratings' );
 	$db_connecton->query( 'delete from users' );
 	echo 0;

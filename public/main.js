@@ -9,14 +9,14 @@ markings = [
 	{ color: '#aaf', lineWidth: 1, yaxis: { from: 1500, to: 1699 } },
 	{ color: '#7f7', lineWidth: 1, yaxis: { from: 1350, to: 1499 } },
 	{ color: '#afa', lineWidth: 1, yaxis: { from: 1200, to: 1349 } },
-	{ color: '#ccc', lineWidth: 1, yaxis: { from: 0, to: 1199 } },
+	{ color: '#ccc', lineWidth: 1, yaxis: { from: 0, to: 1199 } }
 ];
 
 // グラフ描画の関数
 function render()
 {
 	// API を非同期で叩いてデータを取得
-	$.getJSON( "./db_manipulate.php", { mode: "json" }, function( data ){
+	$.getJSON( api + "db_manipulate.php", { mode: "json" }, function( data ){
 
 		// グラフの上下境界を求める
 		// 生ループダサい……
@@ -56,7 +56,7 @@ function add_user()
 	$( ".ajax-result" ).empty();
 
 	// 処理の間ローディング画像を表示しておく
-	$( "#add-user-result" ).html( '<img src="./img/loading.gif">' );
+	$( "#add-user-result" ).html( '<img src="img/loading.gif">' );
 
 	// テキストボックスの内容取得
 	var user_name = $( "#user-name" ).val();
@@ -71,7 +71,7 @@ function add_user()
 	button.removeAttr( "onClick" );
 
 	// API を非同期で叩いてデータベースを操作させる
-	$.get( "./db_manipulate.php", { user_name: user_name, mode: "add" }, function( result ){
+	$.get( api + "db_manipulate.php", { user_name: user_name, mode: "add" }, function( result ){
 		// この時点で処理が完了しているのでボタンを押せるようにする
 		button.removeClass( "disabled" );
 		button.attr( { onClick: "add_user()" } );
@@ -89,7 +89,7 @@ function add_user()
 		// グラフを再描画
 		render();
 	} );
-};
+}
 
 // ユーザ名入力用テキストボックスの onKeyDown イベントハンドラ
 function add_user_enter( event )
@@ -112,8 +112,8 @@ function update()
 	button.addClass( "disabled" );
 	button.removeAttr( "onClick" );
 
-	$( "#update-result" ).html( '<img src="./img/loading.gif">' );
-	$.get( "./db_manipulate.php", { mode: "update" }, function( result ){
+	$( "#update-result" ).html( '<img src="img/loading.gif">' );
+	$.get( api + "db_manipulate.php", { mode: "update" }, function( result ){
 		button.removeClass( "disabled" );
 		button.attr( { onClick: "update()" } );
 
@@ -132,7 +132,7 @@ function reset()
 {
 	$( ".ajax-result" ).empty();
 
-	$.get( "./db_manipulate.php", { mode: "reset" }, function( result ){
+	$.get( api + "/db_manipulate.php", { mode: "reset" }, function( result ){
 		if ( result == '0' ){
 			$( "#reset-result" ).html( '<p class="alert alert-success">データの削除に成功しました。</p>' );
 		} else {
